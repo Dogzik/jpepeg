@@ -23,7 +23,7 @@ public:
   }
 
 private:
-  int32_t buff;
+  int32_t buff{};
   size_t idx{0};
   size_t buff_bits{0};
   std::vector<std::byte> data_;
