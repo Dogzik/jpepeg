@@ -14,12 +14,13 @@ public:
     input.read(reinterpret_cast<char*>(data.data()), data.size());
   }
 
-  void write_internals(std::ostream& output) const {
+
+private:
+  bool include_marker_;
+  std::vector<std::byte> data;
+
+  void write_internals(std::ostream& output) const override {
     encode_length(output, data.size() + include_marker_ * 2);
     output.write(reinterpret_cast<const char*>(data.data()), data.size());
   }
-
-protected:
-  bool include_marker_;
-  std::vector<std::byte> data;
 };

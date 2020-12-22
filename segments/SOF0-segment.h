@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "segments/magics.h"
 #include "segments/segment.h"
 
@@ -42,7 +44,12 @@ struct SOF0_segment : segment {
     }
   }
 
-  void write_internals(std::ostream& output) const {
+  [[nodiscard]] std::byte get_magic() const noexcept override {
+    return SOF0_MAGIC;
+  }
+
+private:
+  void write_internals(std::ostream& output) const override {
     encode_length(output, 8 + 3 * components.size());
     output.put(precision);
     encode_length(output, height);
@@ -51,9 +58,5 @@ struct SOF0_segment : segment {
     for (auto component : components) {
       component.write(output);
     }
-  }
-
-  [[nodiscard]] std::byte get_magic() const noexcept override {
-    return SOF0_MAGIC;
   }
 };

@@ -17,7 +17,12 @@ struct DHT_segment final : public segment {
     }
   }
 
-  void write_internals(std::ostream& output) {
+  [[nodiscard]] std::byte get_magic() const noexcept override {
+    return DHT_MAGIC;
+  }
+
+private:
+  void write_internals(std::ostream& output) const override {
     uint16_t total_tables_size = 0;
     for (auto const& table : tables) {
       total_tables_size += table.serialized_length();
@@ -26,9 +31,5 @@ struct DHT_segment final : public segment {
     for (const auto& table : tables) {
       table.write_internals(output);
     }
-  }
-
-  [[nodiscard]] std::byte get_magic() const noexcept override {
-    return DHT_MAGIC;
   }
 };

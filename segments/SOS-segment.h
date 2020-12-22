@@ -39,16 +39,17 @@ struct SOS_segment final : segment {
     input.read(reinterpret_cast<char*>(skip_bytes.data()), skip_bytes.size());
   }
 
-  void write_internals(std::ostream& output) const {
+  [[nodiscard]] std::byte get_magic() const noexcept override {
+    return SOS_MAGIC;
+  }
+
+private:
+  void write_internals(std::ostream& output) const override {
     encode_length(output, 6 + 2 * components.size());
     output.put(components.size());
     for (auto component : components) {
       component.write_internals(output);
     }
     output.write(reinterpret_cast<const char*>(skip_bytes.data()), skip_bytes.size());
-  }
-
-  [[nodiscard]] std::byte get_magic() const noexcept override {
-    return SOS_MAGIC;
   }
 };
