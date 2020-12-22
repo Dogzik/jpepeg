@@ -1,0 +1,6 @@
+cmake-*
+.idea
+*.xml
+*.aux
+*.log
+*.gz
