@@ -31,7 +31,7 @@ struct huffman_table {
       int suffixes_cnt = 1 << (MAX_CODE_SIZE - code_size);
       for (int i = 0; i < counts[code_size - 1]; ++i) {
         for (int j = 0; j < suffixes_cnt; ++j) {
-          decode_table[cur_code] = {symbols[symbol_idx], code_size};
+          decode_table[cur_code] = {.symbol = symbols[symbol_idx], .code_size = code_size};
           ++cur_code;
         }
         ++symbol_idx;
@@ -40,7 +40,17 @@ struct huffman_table {
   }
 
   void build_encode_table() {
-    // TODO
+    size_t symbol_idx = 0;
+    uint16_t cur_code = 0;
+    for (uint8_t code_size = 1; code_size <= MAX_CODE_SIZE; ++code_size) {
+      int suffixes_cnt = 1 << (MAX_CODE_SIZE - code_size);
+      for (int i = 0; i < counts[code_size - 1]; ++i) {
+        uint16_t shifted_code = cur_code >> (MAX_CODE_SIZE - code_size);
+        encode_table[symbols[symbol_idx]] = {.code = shifted_code, .size = code_size};
+        cur_code += suffixes_cnt;
+        ++symbol_idx;
+      }
+    }
   }
 
   explicit huffman_table(std::istream& input) {
@@ -53,6 +63,7 @@ struct huffman_table {
     symbols.resize(total_count);
     input.read(reinterpret_cast<char*>(symbols.data()), total_count);
     build_decode_table();
+    build_encode_table();
   }
 
   void write_internals(std::ostream& output) const {
