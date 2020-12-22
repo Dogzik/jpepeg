@@ -15,8 +15,9 @@
 
 #include "huffman/huffman-table.h"
 #include "huffman/huffman-decoding.h"
+#include "huffman/huffman-encoding.h"
 
-void encode_jpg(std::istream& input) {
+void encode_jpg(std::istream& input, std::ostream& output) {
   std::byte marker[2];
   input.read(reinterpret_cast<char*>(marker), 2);
   if ((marker[0] != MARKER_MAGIC) || (marker[1] != SOI_MAGIC)) {
@@ -78,4 +79,10 @@ void encode_jpg(std::istream& input) {
     }
   }
   auto components = decode_huffman(input, *sof_ptr, *sos_ptr, tables);
+  output.put(std::to_integer<char>(MARKER_MAGIC));
+  output.put(std::to_integer<char>(SOI_MAGIC));
+  for (const auto& cur_segment : segments) {
+    cur_segment->write(output);
+  }
+  encode_huffman(output, *sof_ptr, *sos_ptr, tables, components);
 }

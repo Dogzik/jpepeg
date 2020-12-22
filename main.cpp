@@ -26,14 +26,19 @@ int main(int argc, char* argv[]) {
     return 0;
   }
   std::ifstream input(argv[2], std::ios_base::in | std::ios_base::binary);
+  std::ofstream output(argv[3], std::ios_base::out | std::ios_base::binary);
   if (!input.is_open()) {
     std::cout << "Couldn't open input file: " << argv[2] << "\n";
+    return 0;
+  }
+  if (!output.is_open()) {
+    std::cout << "Couldn't open output file: " << argv[3] << "\n";
     return 0;
   }
   std::string_view mode(argv[1]);
   try {
     if ((mode == "-e") || (mode == "--encode")) {
-      encode_jpg(input);
+      encode_jpg(input, output);
     } else if ((mode == "-d") || (mode == "--decode")) {
       throw std::runtime_error("Not supported yet");
     } else {

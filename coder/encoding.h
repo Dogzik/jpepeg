@@ -2,4 +2,4 @@
 
 #include <istream>
 
-void encode_jpg(std::istream& input);
+void encode_jpg(std::istream& input, std::ostream& output);
