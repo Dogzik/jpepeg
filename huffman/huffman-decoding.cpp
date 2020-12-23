@@ -3,11 +3,11 @@
 #include <vector>
 #include <istream>
 #include <unordered_map>
-#include <cstdio>
+#include <sstream>
 
 #include "common-utils.h"
 
-#include "huffman/huffman-input.h"
+#include "io/multibit-input.h"
 #include "huffman/huffman-table.h"
 #include "huffman/huffman-common.h"
 
@@ -18,8 +18,8 @@
 
 namespace {
 
-std::vector<std::byte> get_decoding_data(std::istream& input) {
-  std::vector<std::byte> res;
+std::string get_decoding_data(std::istream& input) {
+  std::string res;
   for (auto cur_byte = static_cast<std::byte>(input.get());; cur_byte = static_cast<std::byte>(input.get())) {
     if (input.eof()) {
       throw std::runtime_error("Unexpected end of input for huffman");
@@ -36,12 +36,12 @@ std::vector<std::byte> get_decoding_data(std::istream& input) {
         throw std::runtime_error("Expected 0x00 or EOI after control sequence");
       }
     }
-    res.push_back(cur_byte);
+    res.push_back(std::to_integer<char>(cur_byte));
   }
   return res;
 }
 
-std::pair<huffman_table::decode_info, int32_t> decode_value(huffman_input& input, const huffman_table& table) {
+std::pair<huffman_table::decode_info, int32_t> decode_value(multibit_input& input, const huffman_table& table) {
   auto input_bits = input.peek_bits(16);
   auto info = table.decode_table[input_bits];
   input.skip_bits(info.code_size);
@@ -55,7 +55,7 @@ std::pair<huffman_table::decode_info, int32_t> decode_value(huffman_input& input
   }
 }
 
-block decode_block(huffman_input& input, int32_t prev_dc,
+block decode_block(multibit_input& input, int32_t prev_dc,
                    const huffman_table& dc_table, const huffman_table& ac_table) {
   block res{};
   res[0] = prev_dc + decode_value(input, dc_table).second;
@@ -75,7 +75,8 @@ block decode_block(huffman_input& input, int32_t prev_dc,
 
 std::vector<std::vector<block>> decode_huffman(std::istream& input, const SOF0_segment& sof, const SOS_segment& sos,
                                                const std::unordered_map<uint8_t, huffman_table>& tables) {
-  huffman_input huff_input(get_decoding_data(input));
+  std::stringstream string_input(get_decoding_data(input), std::ios_base::in | std::ios_base::binary);
+  multibit_input huff_input(string_input);
   std::vector<std::vector<block>> res(sos.components.size());
   std::vector<int32_t> prev_dc(sos.components.size(), 0);
   auto[macroblock_width, macroblock_height] = get_macroblock_dimensions(sof);

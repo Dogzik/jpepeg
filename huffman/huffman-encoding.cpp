@@ -2,14 +2,14 @@
 
 #include <cmath>
 
-#include "huffman/huffman-output.h"
+#include "io/multibit-output.h"
 #include "huffman/huffman-common.h"
 
 #include "common-utils.h"
 
 namespace {
 
-int32_t encode_block(huffman_output& output, int32_t prev_dc, const block& cur_block,
+int32_t encode_block(multibit_output& output, int32_t prev_dc, const block& cur_block,
                      const huffman_table& dc_table, const huffman_table& ac_table) {
   auto EOB_info = ac_table.encode_table[0x00];
   auto AC16zeros_info = ac_table.encode_table[0xF0];
@@ -55,7 +55,7 @@ int32_t encode_block(huffman_output& output, int32_t prev_dc, const block& cur_b
 void encode_segments(std::ostream& output, const SOF0_segment& sof, const SOS_segment& sos,
                      const std::unordered_map<uint8_t, huffman_table>& tables,
                      const std::vector<std::vector<block>>& components) {
-  huffman_output huff_output(output);
+  multibit_output huff_output(output, true);
   std::vector<int32_t> prev_dc(sos.components.size(), 0);
   auto[macroblock_width, macroblock_height] = get_macroblock_dimensions(sof);
   for (int i = 0; i < macroblock_height * macroblock_width; ++i) {

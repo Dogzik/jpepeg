@@ -1,23 +1,42 @@
-#include "coder/encoding.h"
+#include "transcoder/processing.h"
 
 #include <vector>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
+
+#include "transcoder/encoding.h"
+#include "transcoder/decoding.h"
 
 #include "segments/magics.h"
 #include "segments/segment.h"
+#include "segments/SOS-segment.h"
+#include "segments/SOF0-segment.h"
 #include "segments/COM-segment.h"
 #include "segments/DQT-segment.h"
-#include "segments/SOF0-segment.h"
-#include "segments/SOS-segment.h"
-#include "segments/APP-segment.h"
 #include "segments/DHT-segment.h"
+#include "segments/APP-segment.h"
 
-#include "huffman/huffman-table.h"
 #include "huffman/huffman-decoding.h"
 #include "huffman/huffman-encoding.h"
 
-void encode_jpg(std::istream& input, std::ostream& output) {
+namespace {
+
+std::vector<std::vector<block>> get_components(process_mode mode, std::istream& input,
+                                               const SOF0_segment& sof, const SOS_segment& sos,
+                                               const std::unordered_map<uint8_t, huffman_table>& tables) {
+  switch (mode) {
+    case process_mode::ENCODE:
+      return decode_huffman(input, sof, sos, tables);
+    case process_mode::DECODE:
+      return decode_components(input, sof, sos);
+    default:
+      return {};
+  }
+}
+
+}
+
+void process(std::istream& input, std::ostream& output, process_mode mode) {
   std::byte marker[2];
   input.read(reinterpret_cast<char*>(marker), 2);
   if ((marker[0] != MARKER_MAGIC) || (marker[1] != SOI_MAGIC)) {
@@ -78,11 +97,22 @@ void encode_jpg(std::istream& input, std::ostream& output) {
       }
     }
   }
-  auto components = decode_huffman(input, *sof_ptr, *sos_ptr, tables);
+  auto components = get_components(mode, input, *sof_ptr, *sos_ptr, tables);
   output.put(std::to_integer<char>(MARKER_MAGIC));
   output.put(std::to_integer<char>(SOI_MAGIC));
   for (const auto& cur_segment : segments) {
     cur_segment->write(output);
   }
-  encode_huffman(output, *sof_ptr, *sos_ptr, tables, components);
+  switch (mode) {
+    case process_mode::ENCODE: {
+      for (auto const& component : components) {
+        encode_component(output, component);
+      }
+      break;
+    }
+    case process_mode::DECODE: {
+      encode_huffman(output, *sof_ptr, *sos_ptr, tables, components);
+      break;
+    }
+  }
 }
