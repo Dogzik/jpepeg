@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
   }
   std::string_view mode(argv[1]);
   try {
-    if ((mode == "-e") || (mode == "--encode_numeric")) {
+    if ((mode == "-e") || (mode == "--encode")) {
       process(input, output, process_mode::ENCODE);
     } else if ((mode == "-d") || (mode == "--decode")) {
       process(input, output, process_mode::DECODE);
