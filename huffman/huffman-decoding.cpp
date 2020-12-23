@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <cstdio>
 
+#include "common-utils.h"
+
 #include "huffman/huffman-input.h"
 #include "huffman/huffman-table.h"
 #include "huffman/huffman-common.h"
@@ -37,14 +39,6 @@ std::vector<std::byte> get_decoding_data(std::istream& input) {
     res.push_back(cur_byte);
   }
   return res;
-}
-
-int32_t convert_value(int32_t encoded_value, uint8_t size) {
-  if (encoded_value & (1 << (size - 1))) {
-    return encoded_value;
-  } else {
-    return encoded_value + (((-1) << size) + 1);
-  }
 }
 
 std::pair<huffman_table::decode_info, int32_t> decode_value(huffman_input& input, const huffman_table& table) {

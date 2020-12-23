@@ -8,4 +8,4 @@ include_directories(.)
 add_executable(jpepeg
         main.cpp
         huffman/huffman-decoding.cpp huffman/huffman-encoding.cpp huffman/huffman-common.cpp
-        coder/encoding.cpp)
+        coder/encoding.cpp common-utils.cpp common-utils.h)

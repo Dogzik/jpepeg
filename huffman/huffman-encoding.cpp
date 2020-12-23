@@ -5,18 +5,9 @@
 #include "huffman/huffman-output.h"
 #include "huffman/huffman-common.h"
 
-namespace {
+#include "common-utils.h"
 
-std::pair<uint64_t, uint64_t> get_bin_code(int32_t value) {
-  uint64_t abs_value = std::abs(value);
-  value = (value < 0) ? value - 1 : value;
-  uint64_t bits_cnt = 0;
-  while (abs_value != 0) {
-    bits_cnt += 1;
-    abs_value >>= 1;
-  }
-  return {value & ((1 << bits_cnt) - 1), bits_cnt};
-}
+namespace {
 
 int32_t encode_block(huffman_output& output, int32_t prev_dc, const block& cur_block,
                      const huffman_table& dc_table, const huffman_table& ac_table) {
