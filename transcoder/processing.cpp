@@ -4,9 +4,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include "transcoder/encoding.h"
-#include "transcoder/decoding.h"
-
 #include "segments/magics.h"
 #include "segments/segment.h"
 #include "segments/SOS-segment.h"
@@ -28,7 +25,8 @@ std::vector<std::vector<block>> get_components(process_mode mode, std::istream& 
     case process_mode::ENCODE:
       return decode_huffman(input, sof, sos, tables);
     case process_mode::DECODE:
-      return decode_components(input, sof, sos);
+      // TODO: change
+      return decode_huffman(input, sof, sos, tables);
     default:
       return {};
   }
@@ -105,9 +103,8 @@ void process(std::istream& input, std::ostream& output, process_mode mode) {
   }
   switch (mode) {
     case process_mode::ENCODE: {
-      for (auto const& component : components) {
-        encode_component(output, component);
-      }
+      // TODO: change
+      encode_huffman(output, *sof_ptr, *sos_ptr, tables, components);
       break;
     }
     case process_mode::DECODE: {
